@@ -1,8 +1,8 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
 const { store } = require('./temp-store/store');
+
 const app = express();
-const port = 8000;
+const port = process.env.PORT || 8000;
 
 app.use(express.json());
 
