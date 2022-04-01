@@ -1,10 +1,13 @@
 const express = require('express');
+const cors = require('cors');
 const { store } = require('./temp-store/store');
+
 
 const app = express();
 const port = process.env.PORT || 8000;
 
 app.use(express.json());
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.status(200).json({ done: true, message: 'Hello world from the backend API' });
