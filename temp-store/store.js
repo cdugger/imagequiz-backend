@@ -51,7 +51,7 @@ let store = {
 
     addScore: (quizTaker, quizId, quizScore) => {
         let isValidCustomer = customers.find(x => x.email.toLowerCase() === quizTaker.toLowerCase());
-        let isValidQuiz = quizzes.find(x => x.name === quizId);
+        let isValidQuiz = quizzes.find(x => x.name.toLowerCase() === quizId.toLowerCase());
         if(isValidCustomer && isValidQuiz) {
             let currentDate = new Date();
             scores.push({quizTaker: quizTaker, quizId: quizId, score: quizScore, date: currentDate.toJSON()});

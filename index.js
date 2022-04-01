@@ -57,9 +57,9 @@ app.get('/quiz/:id', (req, res) => {
 
 app.post('/score', (req, res) => {
     let quizTaker = req.body.quizTaker;
-    let quizId = req.body.quizId;
-    let quizScore = req.body.quizScore;
-    let result = store.addScore(quizTaker, quizId, quizScore);
+    let quizName = req.body.quizName;
+    let score = req.body.score;
+    let result = store.addScore(quizTaker, quizName, score);
     if (result.valid) {
         res.status(200).json({ done: true, message: 'Quiz score successfully added.' });
     } else {
