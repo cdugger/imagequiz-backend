@@ -52,23 +52,23 @@ let store = {
     addScore: (quizTaker, quizId, quizScore) => {
         let isValidCustomer = customers.find(x => x.email.toLowerCase() === quizTaker.toLowerCase());
         let isValidQuiz = quizzes.find(x => x.name.toLowerCase() === quizId.toLowerCase());
-        if(isValidCustomer && isValidQuiz) {
+        if (isValidCustomer && isValidQuiz) {
             let currentDate = new Date();
-            scores.push({quizTaker: quizTaker, quizId: quizId, score: quizScore, date: currentDate.toJSON()});
-            return {valid: true}
-        } else if(!isValidCustomer) {
-            return {valid: false, message: 'The given email does not match a customer in our records.'}
+            scores.push({ quizTaker: quizTaker, quizId: quizId, score: quizScore, date: currentDate.toJSON() });
+            return { valid: true }
+        } else if (!isValidCustomer) {
+            return { valid: false, message: 'The given email does not match a customer in our records.' }
         } else {
-            return {valid: false, message: 'The given quiz ID does not match a quiz in our records.'}
+            return { valid: false, message: 'The given quiz ID does not match a quiz in our records.' }
         }
     },
 
     getScore: (quizTaker, quizId) => {
-        let score = scores.find(x => {x.quizTaker.toLowerCase() === quizTaker && x.quizId === quizId});
-        if(score) {
-            return {valid: true, result: score }
+        let score = scores.find(x =>(x.quizTaker.toLowerCase() === quizTaker.toLowerCase()) && (x.quizId.toLowerCase() === quizId.toLowerCase()));
+        if (score) {
+            return { valid: true, score }
         } else {
-            return {valid: false, message: 'Score not found.'}
+            return { valid: false, message: 'Score not found.' }
         }
     }
 }
