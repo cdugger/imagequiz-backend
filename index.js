@@ -72,7 +72,7 @@ app.get('/scores/:quiztaker/:quizid', (req, res) => {
     let quizId = req.params.quizid;
     let result = store.getScore(quizTaker, quizId);
     if (result.valid) {
-        res.status(200).json({ done: true, result: result.score.score });
+        res.status(200).json({ done: true, result: result.score});
     } else {
         res.status(404).json({ done: false, message: result.message, result: undefined});
     }
