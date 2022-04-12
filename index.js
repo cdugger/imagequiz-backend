@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { store } = require('./temp-store/store');
+const { store } = require('./data_access/store');
 
 
 const app = express();
@@ -17,18 +17,31 @@ app.post('/register', (req, res) => {
     let name = req.body.name;
     let email = req.body.email;
     let password = req.body.password;
-    let result = store.addCustomer(name, email, password);
-    if (result.valid) {
+    store.addCustomer(name, email, password)
+    .then(x => {
         res.status(200).json({ done: true, message: 'Customer added' });
-    } else {
-        res.status(403).json({ done: false, message: result.message });
-    }
-})
+    })
+    .catch(e => {
+        console.log(e);
+        res.status(500).json({done: false, message: 'The customer was not added due to an error.'})
+    });
+});
 
 app.post('/login', (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
-    let result = store.login(email, password);
+    store.login(email, password)
+    .then(x => {
+        if(x.valid) {
+            res.status(200).json({done: true, message: 'The customer logged in successfully!'});
+        } else {
+            res.status(401).json({done: true, message: x.message});
+        }
+    })
+    .catch(e => {
+        console.log(e);
+        res.status(500).json({done: false, message: 'Something went wrong.'})
+    })
     if (result.valid) {
         res.status(200).json({ done: true, message: 'The customer logged in successfully' });
     } else {
