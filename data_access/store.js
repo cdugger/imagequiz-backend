@@ -35,12 +35,20 @@ let store = {
     },
 
     getFlowers: () => {
-        let flower_list = flowers;
-        if (flower_list) {
-            return { done: true, flowers };
-        } else {
-            return { done: false, message: 'Error retrieving flowers.' };
-        }
+        return pool.query('select name, picture from imagequiz.flowers')
+        .then(x => {
+            let flowers = [];
+            if (x.rows.length > 0) {
+                for (row of x.rows) {
+                    let flower = {
+                        name: row.name,
+                        picture: row.picture
+                    }
+                    flowers.push(flower);
+                }
+            }
+            return flowers;
+        })
     },
 
     getQuiz: (name) => {

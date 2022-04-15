@@ -45,12 +45,18 @@ app.post('/login', (req, res) => {
 })
 
 app.get('/flowers', (req, res) => {
-    let result = store.getFlowers();
-    if (result.done) {
-        res.status(200).json({ done: true, message: 'Successfully retrieved flowers', result: result.flowers })
-    } else {
-        res.status(404).json({ done: false, message: result.message })
-    }
+    store.getFlowers()
+    .then(x => {
+        if(x) {
+            res.status(200).json({ done: true, message: 'Successfully retrieved flowers', result: x })
+        } else {
+            res.status(404).json({ done: false, message: 'Unable to retrieve flowers' })
+        }
+    })
+    .catch(e => {
+        console.log(e);
+        res.status(500).json({done: false, message: 'Something went wrong.'});
+    })
 })
 
 app.get('/quiz/:name', (req, res) => {
@@ -60,7 +66,7 @@ app.get('/quiz/:name', (req, res) => {
         if(x.id) {
             res.status(200).json({ done: true, result: x });
         } else {
-            res.status(404).json({ done: false, message: result.message});
+            res.status(404).json({ done: false, message: 'Unable to retrieve quiz'});
         }
     })
     .catch(e => {
