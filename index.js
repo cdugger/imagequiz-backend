@@ -35,18 +35,13 @@ app.post('/login', (req, res) => {
         if(x.valid) {
             res.status(200).json({done: true, message: 'The customer logged in successfully!'});
         } else {
-            res.status(401).json({done: true, message: x.message});
+            res.status(401).json({done: false, message: x.message});
         }
     })
     .catch(e => {
         console.log(e);
         res.status(500).json({done: false, message: 'Something went wrong.'})
     })
-    if (result.valid) {
-        res.status(200).json({ done: true, message: 'The customer logged in successfully' });
-    } else {
-        res.status(401).json({ done: false, message: result.message });
-    }
 })
 
 app.get('/flowers', (req, res) => {
@@ -58,14 +53,20 @@ app.get('/flowers', (req, res) => {
     }
 })
 
-app.get('/quiz/:id', (req, res) => {
-    let id = req.params.id;
-    let result = store.getQuiz(id);
-    if (result.done) {
-        res.status(200).json({ done: true, result: result.quiz });
-    } else {
-        res.status(404).json({ done: false, message: result.message, result: undefined });
-    }
+app.get('/quiz/:name', (req, res) => {
+    let name = req.params.name;
+    store.getQuiz(name)
+    .then(x => {
+        if(x.id) {
+            res.status(200).json({ done: true, result: x });
+        } else {
+            res.status(404).json({ done: false, message: result.message});
+        }
+    })
+    .catch(e => {
+        console.log(e);
+        res.status(500).json({done: false, message: 'Something went wrong.'});
+    });
 });
 
 app.post('/score', (req, res) => {
