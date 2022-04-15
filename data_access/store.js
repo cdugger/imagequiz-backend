@@ -13,14 +13,13 @@ const pool = new Pool(connection);
 let store = {
     addCustomer: (name, email, password) => {
         const hash = bcrypt.hashSync(password, 10);
-        return pool.query('insert into imagequiz.customer (name, email, password) values ($1,$2,$3)', [name, email, hash]);
+        return pool.query('insert into imagequiz.customer (name, email, password) values ($1, $2, $3)', [name, email, hash]);
     },
 
     login: (email, password) => {
-        console.log('password is ' + password + "email is " + email);
         return pool.query('select name, email, password from imagequiz.customer where email = $1', [email])
             .then(x => {
-                if (x.rows.length === 1) {
+                if (x.rows.length == 1) {
                     let valid = bcrypt.compareSync(password, x.rows[0].password);
                     if (valid) {
                         return { valid: true };
@@ -30,25 +29,24 @@ let store = {
                 } else {
                     return { valid: false, message: 'Email not found.' };
                 }
-
             });
     },
 
     getFlowers: () => {
         return pool.query('select name, picture from imagequiz.flowers')
-        .then(x => {
-            let flowers = [];
-            if (x.rows.length > 0) {
-                for (row of x.rows) {
-                    let flower = {
-                        name: row.name,
-                        picture: row.picture
+            .then(x => {
+                let flowers = [];
+                if (x.rows.length > 0) {
+                    for (row of x.rows) {
+                        let flower = {
+                            name: row.name,
+                            picture: row.picture
+                        }
+                        flowers.push(flower);
                     }
-                    flowers.push(flower);
                 }
-            }
-            return flowers;
-        })
+                return flowers;
+            })
     },
 
     getQuiz: (name) => {
@@ -72,17 +70,38 @@ let store = {
     },
 
     addScore: (quizTaker, quizId, quizScore) => {
-        let isValidCustomer = customers.find(x => x.email.toLowerCase() === quizTaker.toLowerCase());
-        let isValidQuiz = quizzes.find(x => x.name.toLowerCase() === quizId.toLowerCase());
-        if (isValidCustomer && isValidQuiz) {
-            let currentDate = new Date();
-            scores.push({ quizTaker: quizTaker, quizId: quizId, score: quizScore, date: currentDate.toJSON() });
-            return { valid: true }
-        } else if (!isValidCustomer) {
-            return { valid: false, message: 'The given email does not match a customer in our records.' }
-        } else {
-            return { valid: false, message: 'The given quiz ID does not match a quiz in our records.' }
-        }
+        let customerQuery = `select id from imagequiz.customer where lower(customer.email) = $1`;
+        let quizQuery = `select id from imagequiz.quiz where quiz.name = $1`;
+        let scoreQuery = `insert into imagequiz.score (quiz_id, customer_id, score) values ($1, $2, $3)`;
+
+        return pool.query(customerQuery, [quizTaker.toLowerCase()])
+            .then(x => {
+                if (x.rows.length > 0) {
+                    let customerId = x.rows[0].id;
+                    return pool.query(quizQuery, [quizId])
+                        .then(y => {
+                            if (y.rows.length > 0) {
+                                let quizId = y.rows[0].id;
+                                return pool.query(scoreQuery, [quizId, customerId, quizScore])
+                                    .then(z => {
+                                        return { valid: true };
+                                    }).catch(err => {
+                                        console.log(err);
+                                        return { valid: false, message: 'Something went wrong' };
+
+                                    })
+                            } else {
+                                return { valid: false, message: 'The given quiz ID does not match a quiz in our records.' };
+                            }
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            return { valid: false, message: 'Something went wrong.' }
+                        })
+                } else {
+                    return { valid: false, message: 'The given email does not match a customer in our records.' };
+                }
+            })
     },
 
     getScore: (quizTaker, quizId) => {

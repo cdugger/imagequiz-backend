@@ -79,12 +79,14 @@ app.post('/score', (req, res) => {
     let quizTaker = req.body.quizTaker;
     let quizName = req.body.quizName;
     let score = req.body.score;
-    let result = store.addScore(quizTaker, quizName, score);
-    if (result.valid) {
-        res.status(200).json({ done: true, message: 'Quiz score successfully added.' });
-    } else {
-        res.status(401).json({ done: false, message: result.message });
-    }
+    store.addScore(quizTaker, quizName, score)
+    .then(x => {
+        if(x.valid) {
+            res.status(200).json({ done: true, message: 'Quiz score successfully added.' });
+        } else {
+            res.status(401).json({ done: false, message: x.message });
+        }
+    })
 })
 
 app.get('/scores/:quiztaker/:quizid', (req, res) => {
