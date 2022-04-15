@@ -1,7 +1,6 @@
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
 require('dotenv').config();
-let { quizzes } = require('../temp-store/data');
 
 const connectionString = `postgres://${process.env.DBUSERNAME}:${process.env.PASSWORD}@${process.env.HOST}:${process.env.DATABASEPORT}/${process.env.DATABASE}`;
 const connection = {
@@ -105,12 +104,19 @@ let store = {
     },
 
     getScore: (quizTaker, quizId) => {
-        let score = scores.find(x => (x.quizTaker.toLowerCase() === quizTaker.toLowerCase()) && (x.quizId.toLowerCase() === quizId.toLowerCase()));
-        if (score) {
-            return { valid: true, score }
-        } else {
-            return { valid: false, message: 'Score not found.' }
-        }
+        let scoreQuery = `select score from imagequiz.score s join imagequiz.quiz q on s.quiz_id = q.id join imagequiz.customer c on s.customer_id = c.id
+        where lower(c.email) = $1 and q.name = $2`;
+        return pool.query(scoreQuery, [quizTaker.toLowerCase(), quizId])
+        .then(x => {
+            if(x.rows.length > 0) {
+                return { valid: true, score: x.rows[0].score };
+            } else {
+                return { valid: false, message: 'Score not found.' };
+            }
+        }).catch(err => {
+            console.log(err);
+            return { valid: false, message: 'Something went wrong'};
+        })
     }
 }
 
