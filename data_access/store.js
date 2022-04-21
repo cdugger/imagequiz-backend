@@ -49,18 +49,18 @@ let store = {
     },
 
     getQuiz: (name) => {
-        let sqlQuery = `select q.id as quiz_id, q2.* from imagequiz.quiz q join imagequiz.quiz_question qq on q.id = qq.quiz_id 
+        let sqlQuery = `select * from imagequiz.quiz_question qq join imagequiz.quiz q on qq.quiz_id = q.id
         join imagequiz.question q2 on qq.question_id = q2.id
         where lower(q.name) = $1`;
         return pool.query(sqlQuery, [name.toLowerCase()])
             .then(x => {
-                // console.log(x);
                 let quiz = {};
                 if (x.rows.length > 0) {
                     quiz = {
                         id: x.rows[0].quiz_id,
                         questions: x.rows.map(y => {
-                            return { id: y.id, pictures: y.picture, choices: y.choices, answer: y.answer };
+
+                            return { id: y.id, picture: y.picture, choices: y.choices.split(','), answer: y.answer };
                         })
                     };
                 }
@@ -70,14 +70,16 @@ let store = {
 
     addScore: (quizTaker, quizId, quizScore) => {
         let customerQuery = `select id from imagequiz.customer where lower(customer.email) = $1`;
-        let quizQuery = `select id from imagequiz.quiz where quiz.name = $1`;
-        let scoreQuery = `insert into imagequiz.score (quiz_id, customer_id, score) values ($1, $2, $3)`;
-
+        let quizQuery = `select id from imagequiz.quiz where lower(quiz.name) = $1`;
+        let scoreQuery = `insert into imagequiz.score (quiz_id, customer_id, score, date) values ($1, $2, $3, current_timestamp)`;
+        if(!quizTaker || !quizId || !quizScore) {
+            return { valid: false, message: "Something went wrong." };
+        }
         return pool.query(customerQuery, [quizTaker.toLowerCase()])
             .then(x => {
                 if (x.rows.length > 0) {
                     let customerId = x.rows[0].id;
-                    return pool.query(quizQuery, [quizId])
+                    return pool.query(quizQuery, [quizId.toLowerCase()])
                         .then(y => {
                             if (y.rows.length > 0) {
                                 let quizId = y.rows[0].id;
@@ -107,16 +109,16 @@ let store = {
         let scoreQuery = `select score from imagequiz.score s join imagequiz.quiz q on s.quiz_id = q.id join imagequiz.customer c on s.customer_id = c.id
         where lower(c.email) = $1 and q.name = $2`;
         return pool.query(scoreQuery, [quizTaker.toLowerCase(), quizId])
-        .then(x => {
-            if(x.rows.length > 0) {
-                return { valid: true, score: x.rows[0].score };
-            } else {
-                return { valid: false, message: 'Score not found.' };
-            }
-        }).catch(err => {
-            console.log(err);
-            return { valid: false, message: 'Something went wrong'};
-        })
+            .then(x => {
+                if (x.rows.length > 0) {
+                    return { valid: true, score: x.rows[0].score };
+                } else {
+                    return { valid: false, message: 'Score not found.' };
+                }
+            }).catch(err => {
+                console.log(err);
+                return { valid: false, message: 'Something went wrong' };
+            })
     }
 }
 

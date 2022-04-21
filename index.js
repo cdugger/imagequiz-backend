@@ -7,6 +7,11 @@ const port = process.env.PORT || 8000;
 
 app.use(express.json());
 app.use(cors());
+app.use((req, res, next) => {
+    console.log(`request url: ${req.url}`);
+    console.log(`request method: ${req.method}`);
+    next();
+})
 
 app.get('/', (req, res) => {
     res.status(200).json({ done: true, message: 'Hello world from the backend API' });
