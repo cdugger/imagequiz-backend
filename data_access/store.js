@@ -16,12 +16,12 @@ let store = {
     },
 
     login: (email, password) => {
-        return pool.query('select name, email, password from imagequiz.customer where email = $1', [email])
+        return pool.query('select id, name, email, password from imagequiz.customer where email = $1', [email])
             .then(x => {
                 if (x.rows.length == 1) {
                     let valid = bcrypt.compareSync(password, x.rows[0].password);
                     if (valid) {
-                        return { valid: true };
+                        return { valid: true, user: { id: x.rows[0].id, username: x.rows[0].email } };
                     } else {
                         return { valid: false, message: 'Credentials are not valid.' };
                     }
