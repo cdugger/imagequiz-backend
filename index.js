@@ -157,7 +157,7 @@ app.post('/score', (req, res) => {
             }
         })
         .catch(e => {
-            console.log(err);
+            console.log(e);
             res.status(500).json({ done: false, message: 'Something went wrong'});
         })
 });
