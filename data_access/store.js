@@ -48,6 +48,22 @@ let store = {
             })
     },
 
+    getQuizzes: () => {
+        return pool.query('select * from imagequiz.quiz')
+            .then(x => {
+                let quizzes = [];
+                if (x.rows.length > 0) {
+                    for (row of x.rows) {
+                        let quiz = {
+                            name: row.name,
+                            category_id: row.category_id
+                        }
+                        quizzes.push(quiz);
+                    }
+                }
+                return quizzes;
+            })
+    },
     getQuiz: (name) => {
         let sqlQuery = `select * from imagequiz.quiz_question qq join imagequiz.quiz q on qq.quiz_id = q.id
         join imagequiz.question q2 on qq.question_id = q2.id

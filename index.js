@@ -125,6 +125,21 @@ app.get('/flowers', (req, res) => {
         })
 });
 
+app.get('/quizzes', (req, res) => {
+    store.getQuizzes()
+        .then(x => {
+            if (x) {
+                res.status(200).json({ done: true, message: 'Successfully retrieved quizzes', result: x, length: x.length })
+            } else {
+                res.status(404).json({ done: false, message: 'Unable to retrieve quizzes' })
+            }
+        })
+        .catch(e => {
+            console.log(e);
+            res.status(500).json({ done: false, message: 'Something went wrong.' });
+        })
+})
+
 app.get('/quiz/:name', (req, res) => {
     if (!req.isAuthenticated()) {
         return res.status(401).json({ done: false, message: 'Please log in first.' });
@@ -158,7 +173,7 @@ app.post('/score', (req, res) => {
         })
         .catch(e => {
             console.log(e);
-            res.status(500).json({ done: false, message: 'Something went wrong'});
+            res.status(500).json({ done: false, message: 'Something went wrong' });
         })
 });
 
@@ -175,7 +190,7 @@ app.get('/scores/:quiztaker/:quizid', (req, res) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ done: false, message: "Something went wrong."});
+            res.status(500).json({ done: false, message: "Something went wrong." });
         })
 });
 
