@@ -12,7 +12,10 @@ const app = express();
 const port = process.env.PORT || 8000;
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+}));
 passport.use(new LocalStrategy({ usernameField: 'email' }, function verify(username, password, cb) {
     store.login(username, password)
         .then(x => {
@@ -96,11 +99,16 @@ app.post('/login', passport.authenticate('local', {
 
 app.get('/login/succeeded', (req, res) => {
     res.status(200).json({ done: true, message: 'The customer logged in successfully.' });
-})
+});
 
 app.get('/login/failed', (req, res) => {
     res.status(500).json({ done: false, message: 'The credentials are invalid.' });
-})
+});
+
+app.post('/logout', (req, res) => {
+    req.logout();
+    res.json({ done: true, message: 'The customer signed out successfully' })
+});
 
 app.get('/flowers', (req, res) => {
     store.getFlowers()
@@ -115,11 +123,11 @@ app.get('/flowers', (req, res) => {
             console.log(e);
             res.status(500).json({ done: false, message: 'Something went wrong.' });
         })
-})
+});
 
 app.get('/quiz/:name', (req, res) => {
     if (!req.isAuthenticated()) {
-        res.status(401).json({ done: false, message: 'Please log in first.' });
+        return res.status(401).json({ done: false, message: 'Please log in first.' });
     }
     let name = req.params.name;
     store.getQuiz(name)
