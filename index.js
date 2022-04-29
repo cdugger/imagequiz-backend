@@ -156,6 +156,10 @@ app.post('/score', (req, res) => {
                 res.status(401).json({ done: false, message: x.message });
             }
         })
+        .catch(e => {
+            console.log(err);
+            res.status(500).json({ done: false, message: 'Something went wrong'});
+        })
 });
 
 app.get('/scores/:quiztaker/:quizid', (req, res) => {
@@ -168,6 +172,10 @@ app.get('/scores/:quiztaker/:quizid', (req, res) => {
             } else {
                 res.status(404).json({ done: false, message: x.message });
             }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({ done: false, message: "Something went wrong."});
         })
 });
 
