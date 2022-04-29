@@ -122,18 +122,24 @@ let store = {
     },
 
     getScore: (quizTaker, quizId) => {
-        let scoreQuery = `select score from imagequiz.score s join imagequiz.quiz q on s.quiz_id = q.id join imagequiz.customer c on s.customer_id = c.id
-        where lower(c.email) = $1 and q.name = $2`;
+        let scoreQuery = `select c.email, q.name, s.score from imagequiz.score s join imagequiz.quiz q on s.quiz_id = q.id join imagequiz.customer c on s.customer_id = c.id
+        where lower(c.email) = $1 and lower(q.name) = $2`;
+        console.log(scoreQuery);
         return pool.query(scoreQuery, [quizTaker.toLowerCase(), quizId])
             .then(x => {
+                let scores = [];
                 if (x.rows.length > 0) {
-                    return { valid: true, score: x.rows[0].score };
-                } else {
-                    return { valid: false, message: 'Score not found.' };
+                    for(let row of x.rows) {
+                        let score = {
+                            quizTaker: row.email,
+                            quizName: row.name,
+                            score: row.score
+                        }
+                        scores.push(score);
+                    }
+    
+                    return scores
                 }
-            }).catch(err => {
-                console.log(err);
-                return { valid: false, message: 'Something went wrong' };
             })
     }
 }

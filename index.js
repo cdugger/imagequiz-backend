@@ -182,10 +182,10 @@ app.get('/scores/:quiztaker/:quizid', (req, res) => {
     let quizId = req.params.quizid;
     store.getScore(quizTaker, quizId)
         .then(x => {
-            if (x.valid) {
-                res.status(200).json({ done: true, result: x.score });
+            if (x) {
+                res.status(200).json({ done: true, result: x, length: x.length });
             } else {
-                res.status(404).json({ done: false, message: x.message });
+                res.status(404).json({ done: false, message: "Unable to retrieve scores."});
             }
         })
         .catch(err => {
