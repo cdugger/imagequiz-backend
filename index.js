@@ -142,7 +142,6 @@ app.get('/quizzes', (req, res) => {
 
 app.get('/quiz/:name', (req, res) => {
     if (!req.isAuthenticated()) {
-        console.log(req);
         return res.status(401).json({ done: false, message: 'Please log in first.' });
     }
     let name = req.params.name;
