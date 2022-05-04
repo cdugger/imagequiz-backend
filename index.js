@@ -16,7 +16,7 @@ const port = process.env.PORT || 4002;
 
 app.use(express.json());
 app.use(cors({
-    origin: "https://cdugger.github.io/",
+    origin: "https://cdugger.github.io",
     credentials: true
 }));
 passport.use(new LocalStrategy({ usernameField: 'email' }, function verify(username, password, cb) {
