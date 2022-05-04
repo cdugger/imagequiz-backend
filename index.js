@@ -46,6 +46,7 @@ passport.use(new GoogleStrategy({
         store.findOrCreateNonLocalCustomer(profile.displayName, profile.email, profile.id, profile.provider)
             .then(x => done(null, x))
             .catch(e => {
+                console.log('error in google strategy');
                 console.log(e);
                 return done('Something went wrong.');
             });
