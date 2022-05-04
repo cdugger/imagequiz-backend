@@ -8,7 +8,7 @@ const SQLiteStore = require('connect-sqlite3')(session);
 
 const { store } = require('./data_access/store');
 const backendURL = "https://cdugger-imagequiz-api.herokuapp.com";
-let frontEndUrl = "https://cdugger.github.io";
+let frontEndUrl = "https://cdugger.github.io/imagequiz";
 
 
 const app = express();
