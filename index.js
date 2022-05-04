@@ -2,18 +2,21 @@ const express = require('express');
 const cors = require('cors');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
+const GoogleStrategy = require('passport-google-oauth2').Strategy;
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
 
 const { store } = require('./data_access/store');
+const backendURL = "https://cdugger-imagequiz-api.herokuapp.com";
+let frontEndUrl = "https://cdugger.github.io";
 
 
 const app = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 4002;
 
 app.use(express.json());
 app.use(cors({
-    origin: "https://cdugger.github.io",
+    origin: "https://cdugger.github.io/",
     credentials: true
 }));
 passport.use(new LocalStrategy({ usernameField: 'email' }, function verify(username, password, cb) {
@@ -30,6 +33,27 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, function verify(usern
             cb('Something went wrong');
         });
 }));
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: `${backendURL}/auth/google/callback`,
+    passReqToCallback: true
+},
+    function (request, accessToken, refreshToken, profile, done) {
+        console.log('in Google strategy:');
+        //console.log(profile);
+        store.findOrCreateNonLocalCustomer(profile.displayName, profile.email, profile.id, profile.provider)
+            .then(x => done(null, x))
+            .catch(e => {
+                console.log(e);
+                return done('Something went wrong.');
+            });
+
+    }));
+
+
+
 app.use((req, res, next) => {
     console.log(`request url: ${req.url}`);
     console.log(`request method: ${req.method}`);
@@ -110,6 +134,41 @@ app.post('/logout', (req, res) => {
     res.json({ done: true, message: 'The customer signed out successfully' })
 });
 
+app.get('/isloggedin', (req, res) => {
+    if (req.isAuthenticated()) {
+        res.status(200).json({ done: true, result: true });
+    } else {
+        res.status(410).json({ done: false, result: false });
+    }
+
+});
+
+app.get('/auth/google',
+    passport.authenticate('google', {
+        scope:
+            ['email', 'profile']
+    })
+)
+
+app.get('/auth/google/callback',
+    passport.authenticate('google', {
+        successRedirect: '/auth/google/success',
+        failureRedirect: '/auth/google/failure'
+    })
+);
+
+app.get('/auth/google/success', (req, res) => {
+    console.log('/auth/google/success');
+    console.log(req.user);
+    res.redirect(`${frontEndUrl}/#/google/${req.user.username}/${req.user.name}`);
+});
+
+app.get('/auth/google/failure', (req, res) => {
+    console.log('/auth/google/failure');
+    res.redirect(`${frontEndUrl}/#/google/failed`);
+});
+
+
 app.get('/flowers', (req, res) => {
     store.getFlowers()
         .then(x => {
@@ -185,7 +244,7 @@ app.get('/scores/:quiztaker/:quizid', (req, res) => {
             if (x) {
                 res.status(200).json({ done: true, result: x, length: x.length });
             } else {
-                res.status(404).json({ done: false, message: "Unable to retrieve scores."});
+                res.status(404).json({ done: false, message: "Unable to retrieve scores." });
             }
         })
         .catch(err => {
